@@ -1,0 +1,15 @@
+Package: slopeflex
+Type: Package
+Title: Fast linear change point (slope flex) estimates using Stan.
+Version: 0.1.0
+Author: Danton Noriega-Goodwin
+Maintainer: Danton Noriega-Goodwin <danton.noriega@gmail.com>
+Description: Fast linear change point (slope flex) estimates using priors on for both observed and expected slope changes. All slope changes (slope flexes) are estimated using Stan.
+License: GPL (>=3)
+Encoding: UTF-8
+LazyData: true
+Imports:
+  rstan,
+  segmented
+Depends: R (>= 3.5.2)
+RoxygenNote: 6.0.1
