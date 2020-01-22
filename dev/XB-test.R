@@ -34,9 +34,9 @@ sf <- tibble::tribble(
   breaks[3] + round(rnorm(1, 2, 3)), 10, 10,
   breaks[4] + round(rnorm(1, 2, 3)), -20, 10,
   # these dates comprise future dates as "best guesses" by folks with knowledge (e.g. engineers)
-  as.Date("2019-12-08"), 32, 2,
-  as.Date("2020-02-01"), 9, 2,
-  as.Date("2020-03-13"), -16, 2
+  as.Date("2019-12-08"), 32, 5,
+  as.Date("2020-02-01"), 9, 3,
+  as.Date("2020-03-13"), -16, 5
 )
 sf
 
@@ -46,7 +46,7 @@ sf
 ##########################################################################################
 #' input dataframe ds with values (date, y) and slope flex table sf with horizon h
 build_slope_flex_model <- function(ds, sf, h) {
-
+  #
   y <- ds$y
   dates <- ds$date
   dates_fc <- seq(max(dates) + 1, max(dates) + h, by = 1)
@@ -54,7 +54,7 @@ build_slope_flex_model <- function(ds, sf, h) {
   time_fc <- as.numeric(dates_fc)
   idx <- as.vector(dates - min(dates) + 1)
   idx_fc <- as.vector(dates_fc - min(dates) + 1)
-
+  #
   build_slope_flex <- function(x, v) {
     # x assumed character of dates. convert to numeric.
     x <- x %>%
@@ -68,9 +68,9 @@ build_slope_flex_model <- function(ds, sf, h) {
     for(i in names(x))
       assign(i, x[i], envir = parent.frame())
   }
-
+  #
   build_slope_flex(sf$date, 'slope_flex')
-
+  #
   fml <- paste(
     "~ idx",
     paste(
@@ -83,10 +83,10 @@ build_slope_flex_model <- function(ds, sf, h) {
       sprintf("pmax(0, time_fc - %s)", names(slope_flex)),
       collapse = " + "),
     sep = ' + ')
-
+  #
   X <- model.matrix(as.formula(fml))
   X_fc <- model.matrix(as.formula(fml_fc))
-
+  #
   standata <- within(list(), {
     X <- X
     X_fc <- X_fc
@@ -98,9 +98,9 @@ build_slope_flex_model <- function(ds, sf, h) {
     k <- length(params)
     h <- h
   })
-
+  #
   standata
-
+  #
 }
 
 options(mc.cores = 1)
@@ -119,7 +119,8 @@ fit <- rstan::sampling(
   warmup = mcmc_list$n_warmup,
   iter = mcmc_list$n_iter,
   thin = mcmc_list$n_thin)
-rstan::get_posterior_mean(fit, 'B')[,1]
+rstan::get_posterior_mean(fit, 'B')[,1] # intercept, slope (B[1:2]) and flex estimates (B[3:])
+apply(rstan::extract(fit)[['B']], 2, sd) # variation in parameter estimates
 
 
 # build plot ------------------------------------------------------------------------
