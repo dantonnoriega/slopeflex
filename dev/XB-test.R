@@ -1,7 +1,6 @@
 ######################################
 ## SLOPEFLEX ----------------
 ######################################
-library(rstan, quietly = TRUE)
 set.seed(2020)
 dates <- seq(as.Date('2019-01-01'), as.Date('2019-11-01'), by = 'day')
 # create 4 segments (3 breaks/flexes)
@@ -130,10 +129,10 @@ yhat_CI <- function(fit, par = 'yhat_fc', p) {
   sims <- c(XB) + rnorm(length(XB), 0, c(sig))
   apply(matrix(sims, nrow(XB), ncol(XB)), 2, quantile, p)
 }
-yhat <- get_posterior_mean(fit, pars = 'yhat')[,'mean-all chains']
-yhat_fc <- get_posterior_mean(fit, pars = 'yhat_fc')[,'mean-all chains']
-xx <- get_posterior_mean(fit, pars = 'x_fc')[,'mean-all chains']
-x <- get_posterior_mean(fit, pars = 'x')[,'mean-all chains']
+yhat <- rstan::get_posterior_mean(fit, pars = 'yhat')[,'mean-all chains']
+yhat_fc <- rstan::get_posterior_mean(fit, pars = 'yhat_fc')[,'mean-all chains']
+xx <- rstan::get_posterior_mean(fit, pars = 'x_fc')[,'mean-all chains']
+x <- rstan::get_posterior_mean(fit, pars = 'x')[,'mean-all chains']
 x <- x + min(dates)
 xx <- xx + min(dates)
 yhat_LB = yhat_CI(fit, p = .05)
