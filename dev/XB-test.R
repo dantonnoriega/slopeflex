@@ -31,11 +31,11 @@ sf <- tibble::tribble(
   # these dates comprise the dates we sort of know with our best guesses on the slope changes
   breaks[2] + round(rnorm(1, 2, 3)), 5, 1,
   breaks[3] + round(rnorm(1, 2, 3)), 10, 10,
-  breaks[4] + round(rnorm(1, 2, 3)), -20, 10,
+  breaks[4] + round(rnorm(1, 2, 3)), -20, 20,
   # these dates comprise future dates as "best guesses" by folks with knowledge (e.g. engineers)
   as.Date("2019-12-08"), 32, 5,
-  as.Date("2020-02-01"), 9, 3,
-  as.Date("2020-03-13"), -16, 5
+  as.Date("2020-02-01"), 51, 3,
+  as.Date("2020-03-13"), -36, 5
 )
 sf
 
@@ -47,17 +47,18 @@ sf
 build_slope_flex_model <- function(ds, sf, h) {
   #
   y <- ds$y
-  dates <- ds$date
-  dates_fc <- seq(max(dates) + 1, max(dates) + h, by = 1)
-  time <- as.numeric(dates)
-  time_fc <- as.numeric(dates_fc)
-  idx <- as.vector(dates - min(dates) + 1)
-  idx_fc <- as.vector(dates_fc - min(dates) + 1)
+  times <- as.numeric(ds$date)
+  times_fc <- as.numeric(seq(max(ds$date) + 1, max(ds$date) + h, by = 1))
+  idx <- as.vector(times - min(times) + 1)
+  idx_fc <- as.vector(times_fc - min(times) + 1)
   #
   build_slope_flex <- function(x, v) {
     # x assumed character of dates. convert to numeric.
+    if(class(x) %in% c("Date", "character")) {
+      x <- x %>%
+        sapply(as.Date)
+    }
     x <- x %>%
-      sapply(as.Date) %>%
       sapply(as.numeric)
     # generate named list
     names(x) <-
@@ -73,13 +74,13 @@ build_slope_flex_model <- function(ds, sf, h) {
   fml <- paste(
     "~ idx",
     paste(
-      sprintf("pmax(0, time - %s)", names(slope_flex)),
+      sprintf("pmax(0, times - %s)", names(slope_flex)),
       collapse = " + "),
     sep = ' + ')
   fml_fc <- paste(
     "~ idx_fc",
     paste(
-      sprintf("pmax(0, time_fc - %s)", names(slope_flex)),
+      sprintf("pmax(0, times_fc - %s)", names(slope_flex)),
       collapse = " + "),
     sep = ' + ')
   #
@@ -103,7 +104,7 @@ build_slope_flex_model <- function(ds, sf, h) {
 }
 
 options(mc.cores = 1)
-mcmc_list = list(n_iter = 5000, n_chain = 2, n_thin = 1, n_warmup = 1000,
+mcmc_list = list(n_iter = 9000, n_chain = 1, n_thin = 1, n_warmup = 1000,
                  control = list(adapt_delta = .8, max_treedepth = 10))
 h = as.integer(max(sf$date) - max(dates)) + 60 # end of data to last assump flex + 60 days
 standata <- build_slope_flex_model(ds, sf, h)
@@ -118,9 +119,9 @@ fit <- rstan::sampling(
   warmup = mcmc_list$n_warmup,
   iter = mcmc_list$n_iter,
   thin = mcmc_list$n_thin)
+
 rstan::get_posterior_mean(fit, 'B')[,1] # intercept, slope (B[1:2]) and flex estimates (B[3:])
 apply(rstan::extract(fit)[['B']], 2, sd) # variation in parameter estimates
-
 
 # build plot ------------------------------------------------------------------------
 yhat_CI <- function(fit, par = 'yhat_fc', p) {
@@ -129,10 +130,12 @@ yhat_CI <- function(fit, par = 'yhat_fc', p) {
   sims <- c(XB) + rnorm(length(XB), 0, c(sig))
   apply(matrix(sims, nrow(XB), ncol(XB)), 2, quantile, p)
 }
-yhat <- rstan::get_posterior_mean(fit, pars = 'yhat')[,'mean-all chains']
-yhat_fc <- rstan::get_posterior_mean(fit, pars = 'yhat_fc')[,'mean-all chains']
-xx <- rstan::get_posterior_mean(fit, pars = 'x_fc')[,'mean-all chains']
-x <- rstan::get_posterior_mean(fit, pars = 'x')[,'mean-all chains']
+n_chains = length(fit@stan_args)
+col_name = if(n_chains == 1) 'mean-chain:1' else 'mean-all chains'
+yhat <- rstan::get_posterior_mean(fit, pars = 'yhat')[,col_name]
+yhat_fc <- rstan::get_posterior_mean(fit, pars = 'yhat_fc')[,col_name]
+xx <- rstan::get_posterior_mean(fit, pars = 'x_fc')[,col_name]
+x <- rstan::get_posterior_mean(fit, pars = 'x')[,col_name]
 x <- x + min(dates)
 xx <- xx + min(dates)
 yhat_LB = yhat_CI(fit, p = .05)
