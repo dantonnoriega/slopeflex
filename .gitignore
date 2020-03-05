@@ -1,4 +1,4 @@
-stan/*.rds
+inst/stan/*.rds
 .Rproj.user
 .Rhistory
 .RData

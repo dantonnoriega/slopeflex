@@ -44,70 +44,11 @@ sf
 # (0) PROTOTYPE SLOPE FLEX --------------------------------------
 ##########################################################################################
 #' input dataframe ds with values (date, y) and slope flex table sf with horizon h
-build_slope_flex_model <- function(ds, sf, h) {
-  #
-  y <- ds$y
-  times <- as.numeric(ds$date)
-  times_fc <- as.numeric(seq(max(ds$date) + 1, max(ds$date) + h, by = 1))
-  idx <- as.vector(times - min(times) + 1)
-  idx_fc <- as.vector(times_fc - min(times) + 1)
-  #
-  build_slope_flex <- function(x, v) {
-    # x assumed character of dates. convert to numeric.
-    if(class(x) %in% c("Date", "character")) {
-      x <- x %>%
-        sapply(as.Date)
-    }
-    x <- x %>%
-      sapply(as.numeric)
-    # generate named list
-    names(x) <-
-      paste0(v, seq_along(x))
-    assign(v, x, envir = parent.frame())
-    # assign locally to function env
-    for(i in names(x))
-      assign(i, x[i], envir = parent.frame())
-  }
-  #
-  build_slope_flex(sf$date, 'slope_flex')
-  #
-  fml <- paste(
-    "~ idx",
-    paste(
-      sprintf("pmax(0, times - %s)", names(slope_flex)),
-      collapse = " + "),
-    sep = ' + ')
-  fml_fc <- paste(
-    "~ idx_fc",
-    paste(
-      sprintf("pmax(0, times_fc - %s)", names(slope_flex)),
-      collapse = " + "),
-    sep = ' + ')
-  #
-  X <- model.matrix(as.formula(fml))
-  X_fc <- model.matrix(as.formula(fml_fc))
-  #
-  standata <- within(list(), {
-    X <- X
-    X_fc <- X_fc
-    y <- y
-    params <- sf$params
-    params_sd <- sf$params_sd
-    n <- length(y)
-    m <- ncol(X)
-    k <- length(params)
-    h <- h
-  })
-  #
-  standata
-  #
-}
-
 options(mc.cores = 1)
-mcmc_list = list(n_iter = 9000, n_chain = 1, n_thin = 1, n_warmup = 1000,
+mcmc_list = list(n_iter = 2500, n_chain = 1, n_thin = 1, n_warmup = 500,
                  control = list(adapt_delta = .8, max_treedepth = 10))
 h = as.integer(max(sf$date) - max(dates)) + 60 # end of data to last assump flex + 60 days
-standata <- build_slope_flex_model(ds, sf, h)
+standata <- slopeflex_build_model(ds, sf, h)
 stan_file <- here::here("stan/XB.stan")
 cat(paste(readLines(stan_file)), sep = '\n')
 model <- rstan::stan_model(stan_file, auto_write = TRUE)
@@ -119,37 +60,11 @@ fit <- rstan::sampling(
   warmup = mcmc_list$n_warmup,
   iter = mcmc_list$n_iter,
   thin = mcmc_list$n_thin)
+attr(fit, 'slopeflex') = TRUE
+attr(fit, 'ds') = ds
 
 rstan::get_posterior_mean(fit, 'B')[,1] # intercept, slope (B[1:2]) and flex estimates (B[3:])
 apply(rstan::extract(fit)[['B']], 2, sd) # variation in parameter estimates
 
 # build plot ------------------------------------------------------------------------
-yhat_CI <- function(fit, par = 'yhat_fc', p) {
-  XB <- rstan::extract(fit)[[par]]
-  sig <- rstan::extract(fit)[['sig']]
-  sims <- c(XB) + rnorm(length(XB), 0, c(sig))
-  apply(matrix(sims, nrow(XB), ncol(XB)), 2, quantile, p)
-}
-n_chains = length(fit@stan_args)
-col_name = if(n_chains == 1) 'mean-chain:1' else 'mean-all chains'
-yhat <- rstan::get_posterior_mean(fit, pars = 'yhat')[,col_name]
-yhat_fc <- rstan::get_posterior_mean(fit, pars = 'yhat_fc')[,col_name]
-xx <- rstan::get_posterior_mean(fit, pars = 'x_fc')[,col_name]
-x <- rstan::get_posterior_mean(fit, pars = 'x')[,col_name]
-x <- x + min(dates)
-xx <- xx + min(dates)
-yhat_LB = yhat_CI(fit, p = .05)
-yhat_UB = yhat_CI(fit, p = .95)
-
-# output plots -----------
-plot(yhat_fc, x = xx, ylim = c(min(yhat_LB), max(yhat_UB)),
-     xlim = c(min(xx), max(xx)),
-     type = 'l', lty = 3, lwd = 2,
-     col = 4)
-polygon(x = c(xx,rev(xx)),
-        y = c(yhat_LB, rev(yhat_UB)),
-        border = NA, col = scales::alpha('gray50', .3))
-lines(yhat, x = x, lty = 1, lwd = 2, col = 1)
-points(standata$y, x = x, pch = 20, col = 2)
-
-
+slopeflex_plot_fit(fit)
