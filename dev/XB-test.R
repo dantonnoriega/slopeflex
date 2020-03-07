@@ -1,6 +1,8 @@
 ######################################
 ## SLOPEFLEX ----------------
 ######################################
+library(slopeflex)
+library(tidyverse)
 set.seed(2020)
 dates <- seq(as.Date('2019-01-01'), as.Date('2019-11-01'), by = 'day')
 # create 4 segments (3 breaks/flexes)
@@ -24,9 +26,9 @@ ds <- ds %>%
 # plot the redux ds dataframe
 with(ds, plot(y = y, x = date))
 
-# build a list of existing AND future slope flexes (sf)
+# build a list of existing AND future slope flexes (sx)
 ## add some uncertainty to the break points
-sf <- tibble::tribble(
+sx <- tibble::tribble(
   ~date, ~params, ~params_sd,
   # these dates comprise the dates we sort of know with our best guesses on the slope changes
   breaks[2] + round(rnorm(1, 2, 3)), 5, 1,
@@ -37,34 +39,17 @@ sf <- tibble::tribble(
   as.Date("2020-02-01"), 51, 3,
   as.Date("2020-03-13"), -36, 5
 )
-sf
+sx
 
 
 ##########################################################################################
 # (0) PROTOTYPE SLOPE FLEX --------------------------------------
 ##########################################################################################
-#' input dataframe ds with values (date, y) and slope flex table sf with horizon h
-options(mc.cores = 1)
-mcmc_list = list(n_iter = 2500, n_chain = 1, n_thin = 1, n_warmup = 500,
-                 control = list(adapt_delta = .8, max_treedepth = 10))
-h = as.integer(max(sf$date) - max(dates)) + 60 # end of data to last assump flex + 60 days
-standata <- slopeflex_build_model(ds, sf, h)
-stan_file <- here::here("stan/XB.stan")
-cat(paste(readLines(stan_file)), sep = '\n')
-model <- rstan::stan_model(stan_file, auto_write = TRUE)
-fit <- rstan::sampling(
-  model,
-  data = standata,
-  control = mcmc_list$control,
-  chains = mcmc_list$n_chain,
-  warmup = mcmc_list$n_warmup,
-  iter = mcmc_list$n_iter,
-  thin = mcmc_list$n_thin)
-attr(fit, 'slopeflex') = TRUE
-attr(fit, 'ds') = ds
-
-rstan::get_posterior_mean(fit, 'B')[,1] # intercept, slope (B[1:2]) and flex estimates (B[3:])
-apply(rstan::extract(fit)[['B']], 2, sd) # variation in parameter estimates
+# input dataframe ds with values (date, y) and slope flex table sx with horizon h
+h = 365
+sx_obj_stan <- slopeflex_fit_model(ds,sx,h)
+sx_obj_lm <- slopeflex_fit_model(ds,sx,h, 'lm')
 
 # build plot ------------------------------------------------------------------------
-slopeflex_plot_fit(fit)
+plot(sx_obj_stan)
+plot(sx_obj_lm)

@@ -1,4 +1,5 @@
 inst/stan/*.rds
+src/*.tmp
 .Rproj.user
 .Rhistory
 .RData

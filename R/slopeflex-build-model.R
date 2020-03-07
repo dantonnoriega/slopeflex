@@ -1,17 +1,22 @@
 #' function to build a slopeflex model matrix
 #' @importFrom magrittr %>%
 #' @param ds data frame or tibble with 2 columns. First column is a date, second some value
-#' @param sf data frame or tibble with 3 columns.
+#' @param sx data frame or tibble with 3 columns.
 #'     First column is date, second the expected value of the slope change,
 #'     third is the standard deviation of the the slope change.
 #' @param h positive integer value. this is the forecast horizon.
+#' @param prior_intercept numeric(2) with mean and std dev of intercept prior
+#' @param prior_slope numeric(2) with mean and std dev of initial slope prior
 #' @export
 
-slopeflex_build_model <- function(ds, sf, h) {
+slopeflex_build_model <- function(
+  ds, sx, h,
+  prior_intercept = c(0,100),
+  prior_slope = c(0, 10)) {
 
-  y <- ds$y
-  times <- as.numeric(ds$date)
-  times_fc <- as.numeric(seq(max(ds$date) + 1, max(ds$date) + h, by = 1))
+  y <- ds[[2]]
+  times <- as.numeric(ds[[1]])
+  times_fc <- as.numeric(seq(max(ds[[1]]) + 1, max(ds[[1]]) + h, by = 1))
   idx <- as.vector(times - min(times) + 1)
   idx_fc <- as.vector(times_fc - min(times) + 1)
   #
@@ -32,7 +37,7 @@ slopeflex_build_model <- function(ds, sf, h) {
       assign(i, x[i], envir = parent.frame())
   }
   #
-  build_slope_flex(sf$date, 'slope_flex')
+  build_slope_flex(sx[[1]], 'slope_flex')
   #
   fml <- paste(
     "~ idx",
@@ -54,12 +59,16 @@ slopeflex_build_model <- function(ds, sf, h) {
     X <- X
     X_fc <- X_fc
     y <- y
-    params <- sf$params
-    params_sd <- sf$params_sd
+    params <- sx[[2]]
+    params_sd <- sx[[3]]
     n <- length(y)
     m <- ncol(X)
     k <- length(params)
     h <- h
+    a <- prior_intercept[1]
+    a_sd <- prior_intercept[2]
+    b <- prior_slope[1]
+    b_sd <- prior_slope[2]
   })
 
 }

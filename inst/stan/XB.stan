@@ -3,6 +3,11 @@ data {
   int<lower=2> m; // number of variables
   int<lower=1> k; // number of slope flexes
   int<lower=1> h; // forecast horizon
+  //intercept
+  real a;
+  real<lower=0> a_sd;
+  real b;
+  real<lower=0> b_sd;
   vector[n] y;
   matrix[n,m] X; // model matrix
   matrix[h,m] X_fc; // forecat model matrix
@@ -20,8 +25,8 @@ parameters {
   real<lower=0> sig;
 }
 model {
-  B[1] ~ normal(0, 10);
-  B[2] ~ normal(0, 10);
+  B[1] ~ normal(a, a_sd);
+  B[2] ~ normal(b, b_sd);
   B[3:m] ~ normal(params, params_sd);
   sig ~ exponential(1);
   yy ~ normal(X*B, sig);
