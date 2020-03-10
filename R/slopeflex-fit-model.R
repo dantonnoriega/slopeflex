@@ -8,21 +8,21 @@
 #' @param h positive integer value. this is the forecast horizon.
 #'     added to the end of the last slopeflex (even if unobserved)
 #' @param lb_ub numeric(2) vector with lower bound and upper bound.
-#' @param engine c('rstan', 'lm')
+#' @param engine c('stan', 'lm')
 #' @export
 
 slopeflex_fit_model <- function(
-  ds, sx, h, engine = c('rstan', 'lm')[1],
+  ds, sx, h, engine = c('stan', 'lm')[1],
   lb_ub = c(.05,.95), ...
 ) {
 
   # if things fail to build, go to
   # https://discourse.mc-stan.org/t/rstantools-rstan-package-skeleton-failing-
   # with-error-in-getdllregisteredroutines-dllinfo/6848/31
-  stopifnot(engine %in% c('rstan', 'lm'))
+  stopifnot(engine %in% c('stan', 'lm'))
   dots = list(...)
 
-  if(engine == 'rstan') {
+  if(engine == 'stan') {
     mc.cores = if(is.null(dots$mc.cores)) 1 else dots$mc.cores
     mcmc_list = if(is.null(dots$mcmc_list)) {
       list(n_iter = 2500, n_chain = 1, n_thin = 1, n_warmup = 500,
@@ -77,8 +77,10 @@ slopeflex_fit_model_stan <- function(
   }
   yhat <- rstan::get_posterior_mean(fit, pars = 'yhat')[,col_name]
   yhat_fc <- rstan::get_posterior_mean(fit, pars = 'yhat_fc')[,col_name]
-  xx <- rstan::get_posterior_mean(fit, pars = 'x_fc')[,col_name]
-  x <- rstan::get_posterior_mean(fit, pars = 'x')[,col_name]
+  X <- standata$X
+  X_fc <- standata$X_fc
+  x <- X[,2];
+  xx <- rbind(X,X_fc)[,2];
   x <- x + min(dates) - 1
   xx <- xx + min(dates) - 1
   yhat_LB = yhat_CI(fit, p = lb_ub[1])
@@ -92,8 +94,8 @@ slopeflex_fit_model_stan <- function(
     x = x,
     x_fc = xx,
     y = ds[[2]],
-    yhat = yhat,
-    yhat_fc = yhat_fc,
+    yhat = c(yhat),
+    yhat_fc = c(yhat_fc),
     yhat_LB = yhat_LB,
     yhat_UB = yhat_UB
   )
@@ -145,7 +147,8 @@ slopeflex_fit_model_lm<- function(
 
   yhat_CI <- function(fit, p) {
 
-    B <- mvtnorm::rmvnorm(2000, b, diag(b_se))
+    N <- 2000
+    B <- matrix(rnorm(N*length(b), b, b_se), ncol = length(b), byrow = TRUE)
     X <- rbind(dat$X, dat$X_fc)
     XB <- B %*% t(X)
     sig <- sigma(fit)
@@ -175,8 +178,8 @@ slopeflex_fit_model_lm<- function(
     x = x,
     x_fc = xx,
     y = ds[[2]],
-    yhat = yhat,
-    yhat_fc = yhat_fc,
+    yhat = c(yhat),
+    yhat_fc = c(yhat_fc),
     yhat_LB = yhat_LB,
     yhat_UB = yhat_UB
   )

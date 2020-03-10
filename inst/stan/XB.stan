@@ -34,10 +34,6 @@ model {
 generated quantities {
   vector[n] yhat;
   vector[n+h] yhat_fc;
-  vector[n] x;
-  vector[n+h] x_fc;
   yhat = (X*B) + y[1];
   yhat_fc = (append_row(X,X_fc)*B) + y[1];
-  x = X[,2];
-  x_fc = append_row(X,X_fc)[,2];
 }

@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_XB");
-    reader.add_event(45, 43, "end", "model_XB");
+    reader.add_event(41, 39, "end", "model_XB");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -334,8 +334,6 @@ public:
         names__.push_back("sig");
         names__.push_back("yhat");
         names__.push_back("yhat_fc");
-        names__.push_back("x");
-        names__.push_back("x_fc");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -344,12 +342,6 @@ public:
         dims__.push_back(m);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back(n);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back((n + h));
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(n);
@@ -399,25 +391,11 @@ public:
             Eigen::Matrix<double, Eigen::Dynamic, 1> yhat_fc((n + h));
             stan::math::initialize(yhat_fc, DUMMY_VAR__);
             stan::math::fill(yhat_fc, DUMMY_VAR__);
-            current_statement_begin__ = 37;
-            validate_non_negative_index("x", "n", n);
-            Eigen::Matrix<double, Eigen::Dynamic, 1> x(n);
-            stan::math::initialize(x, DUMMY_VAR__);
-            stan::math::fill(x, DUMMY_VAR__);
-            current_statement_begin__ = 38;
-            validate_non_negative_index("x_fc", "(n + h)", (n + h));
-            Eigen::Matrix<double, Eigen::Dynamic, 1> x_fc((n + h));
-            stan::math::initialize(x_fc, DUMMY_VAR__);
-            stan::math::fill(x_fc, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 39;
+            current_statement_begin__ = 37;
             stan::math::assign(yhat, add(multiply(X, B), get_base1(y, 1, "y", 1)));
-            current_statement_begin__ = 40;
+            current_statement_begin__ = 38;
             stan::math::assign(yhat_fc, add(multiply(append_row(X, X_fc), B), get_base1(y, 1, "y", 1)));
-            current_statement_begin__ = 41;
-            stan::math::assign(x, stan::model::rvalue(X, stan::model::cons_list(stan::model::index_omni(), stan::model::cons_list(stan::model::index_uni(2), stan::model::nil_index_list())), "X"));
-            current_statement_begin__ = 42;
-            stan::math::assign(x_fc, stan::model::rvalue(append_row(X, X_fc), stan::model::cons_list(stan::model::index_omni(), stan::model::cons_list(stan::model::index_uni(2), stan::model::nil_index_list())), "append_row(X, X_fc)"));
             // validate, write generated quantities
             current_statement_begin__ = 35;
             size_t yhat_j_1_max__ = n;
@@ -428,16 +406,6 @@ public:
             size_t yhat_fc_j_1_max__ = (n + h);
             for (size_t j_1__ = 0; j_1__ < yhat_fc_j_1_max__; ++j_1__) {
                 vars__.push_back(yhat_fc(j_1__));
-            }
-            current_statement_begin__ = 37;
-            size_t x_j_1_max__ = n;
-            for (size_t j_1__ = 0; j_1__ < x_j_1_max__; ++j_1__) {
-                vars__.push_back(x(j_1__));
-            }
-            current_statement_begin__ = 38;
-            size_t x_fc_j_1_max__ = (n + h);
-            for (size_t j_1__ = 0; j_1__ < x_fc_j_1_max__; ++j_1__) {
-                vars__.push_back(x_fc(j_1__));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -494,18 +462,6 @@ public:
             param_name_stream__ << "yhat_fc" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t x_j_1_max__ = n;
-        for (size_t j_1__ = 0; j_1__ < x_j_1_max__; ++j_1__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "x" << '.' << j_1__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        size_t x_fc_j_1_max__ = (n + h);
-        for (size_t j_1__ = 0; j_1__ < x_fc_j_1_max__; ++j_1__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "x_fc" << '.' << j_1__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -534,18 +490,6 @@ public:
         for (size_t j_1__ = 0; j_1__ < yhat_fc_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "yhat_fc" << '.' << j_1__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        size_t x_j_1_max__ = n;
-        for (size_t j_1__ = 0; j_1__ < x_j_1_max__; ++j_1__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "x" << '.' << j_1__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        size_t x_fc_j_1_max__ = (n + h);
-        for (size_t j_1__ = 0; j_1__ < x_fc_j_1_max__; ++j_1__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "x_fc" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
     }

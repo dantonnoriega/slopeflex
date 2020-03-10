@@ -30,11 +30,13 @@ with(ds, plot(y = y, x = date))
 ## add some uncertainty to the break points
 sx <- tibble::tribble(
   ~date, ~params, ~params_sd,
-  # these dates comprise the dates we sort of know with our best guesses on the slope changes
+  # these dates comprise the dates we sort of know with our best guesses
+  # on the slope changes
   breaks[2] + round(rnorm(1, 2, 3)), 5, 1,
   breaks[3] + round(rnorm(1, 2, 3)), 10, 10,
   breaks[4] + round(rnorm(1, 2, 3)), -20, 20,
-  # these dates comprise future dates as "best guesses" by folks with knowledge (e.g. engineers)
+  # these dates comprise future dates as "best guesses" by folks with
+  # knowledge (e.g. engineers)
   as.Date("2019-12-08"), 32, 5,
   as.Date("2020-02-01"), 51, 3,
   as.Date("2020-03-13"), -36, 5
@@ -42,14 +44,15 @@ sx <- tibble::tribble(
 sx
 
 
-##########################################################################################
+###############################################################################
 # (0) PROTOTYPE SLOPE FLEX --------------------------------------
-##########################################################################################
-# input dataframe ds with values (date, y) and slope flex table sx with horizon h
+###############################################################################
+# input dataframe ds with values (date, y) and slope flex table
+# sx with horizon h
 h = 365
 sx_obj_stan <- slopeflex_fit_model(ds,sx,h)
 sx_obj_lm <- slopeflex_fit_model(ds,sx,h, 'lm')
 
-# build plot ------------------------------------------------------------------------
+# build plot ------------------------------------------------------------------
 plot(sx_obj_stan)
 plot(sx_obj_lm)
