@@ -50,9 +50,8 @@ sx
 # input dataframe ds with values (date, y) and slope flex table
 # sx with horizon h
 h = 365
-sx_obj_stan <- slopeflex_fit_model(ds,sx,h)
-sx_obj_lm <- slopeflex_fit_model(ds,sx,h, 'lm')
+sx_obj_lm <- slopeflex_fit_model(ds,sx,h)
 
 # build plot ------------------------------------------------------------------
-plot(sx_obj_stan)
 plot(sx_obj_lm)
+

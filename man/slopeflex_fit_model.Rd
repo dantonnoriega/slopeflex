@@ -5,8 +5,7 @@
 \title{function to build a slopeflex model matrix. can handle unobserved slopeflexes
     if engine = 'stan'}
 \usage{
-slopeflex_fit_model(ds, sx, h, engine = c("stan", "lm")[1],
-  lb_ub = c(0.05, 0.95), ...)
+slopeflex_fit_model(ds, sx, h, lb_ub = c(0.05, 0.95), ...)
 }
 \arguments{
 \item{ds}{data frame or tibble with 2 columns.
@@ -18,8 +17,6 @@ third is the standard deviation of the the slope change.}
 
 \item{h}{positive integer value. this is the forecast horizon.
 added to the end of the last slopeflex (even if unobserved)}
-
-\item{engine}{c('stan', 'lm')}
 
 \item{lb_ub}{numeric(2) vector with lower bound and upper bound.}
 }

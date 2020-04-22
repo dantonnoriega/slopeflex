@@ -5,7 +5,6 @@
 plot.slopeflex <- function(sx_obj) {
 
   stopifnot(class(sx_obj) %in% 'slopeflex')
-  engine = sx_obj$engine
   y = sx_obj$y
   yhat = sx_obj$yhat
   yhat_fc = sx_obj$yhat_fc
@@ -17,8 +16,7 @@ plot.slopeflex <- function(sx_obj) {
   # output plots -----------
   plot(yhat_fc, x = x_fc, ylim = c(min(yhat_LB), max(yhat_UB)),
        xlim = c(min(x_fc), max(x_fc)), ylab = 'yhat', xlab = 'date',
-       type = 'l', lty = 3, lwd = 2,
-       col = 4, sub = sprintf("engine = '%s'", engine), cex.sub = .7)
+       type = 'l', lty = 3, lwd = 2, col = 4)
   polygon(x = c(x_fc,rev(x_fc)),
           y = c(yhat_LB, rev(yhat_UB)),
           border = NA, col = scales::alpha('gray50', .3))
