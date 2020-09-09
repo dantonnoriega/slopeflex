@@ -5,8 +5,14 @@
 \title{function to build a slopeflex model matrix. can handle unobserved slopeflexes
     if engine = 'stan'}
 \usage{
-slopeflex_fit_model(ds, sx, h, engine = c("stan", "lm")[1],
-  lb_ub = c(0.05, 0.95), ...)
+slopeflex_fit_model(
+  ds,
+  sx,
+  h,
+  engine = c("stan", "lm")[1],
+  lb_ub = c(0.05, 0.95),
+  ...
+)
 }
 \arguments{
 \item{ds}{data frame or tibble with 2 columns.

@@ -18,10 +18,6 @@ third is the standard deviation of the the slope change.}
 added to the end of the last slopeflex (even if unobserved)}
 
 \item{lb_ub}{numeric(2) vector with lower bound and upper bound.}
-
-\item{mc.cores}{number of cores to use. defaults 1 (recommended; faster)}
-
-\item{mcmc_list}{rstan list of options}
 }
 \description{
 function to build a slopeflex model matrix using 'lm' as the engine

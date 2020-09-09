@@ -4,8 +4,13 @@
 \alias{slopeflex_build_model}
 \title{function to build a slopeflex model matrix}
 \usage{
-slopeflex_build_model(ds, sx, h, prior_intercept = c(0, 100),
-  prior_slope = c(0, 10))
+slopeflex_build_model(
+  ds,
+  sx,
+  h,
+  prior_intercept = c(0, 100),
+  prior_slope = c(0, 10)
+)
 }
 \arguments{
 \item{ds}{data frame or tibble with 2 columns. First column is a date, second some value}

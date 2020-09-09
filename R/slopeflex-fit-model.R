@@ -113,10 +113,8 @@ slopeflex_fit_model_stan <- function(
 #' @param h positive integer value. this is the forecast horizon.
 #'     added to the end of the last slopeflex (even if unobserved)
 #' @param lb_ub numeric(2) vector with lower bound and upper bound.
-#' @param mc.cores number of cores to use. defaults 1 (recommended; faster)
-#' @param mcmc_list rstan list of options
 
-slopeflex_fit_model_lm<- function(
+slopeflex_fit_model_lm <- function(
   ds, sx, h, lb_ub
 ) {
 
