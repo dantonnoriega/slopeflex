@@ -7,8 +7,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "danton.noriega@gmail.com")
 Description: Fast linear change point (slope flex) estimates using priors on 
-  for both observed and expected slope changes. All slope changes (slope flexes)
-  are estimated using Stan.
+  for both observed and expected slope changes. Slope changes (slope flexes)
+  can be estimated using Stan or OLS as engines.
 License: MIT
 Encoding: UTF-8
 LazyData: true
