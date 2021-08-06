@@ -16,7 +16,7 @@ plot.slopeflex <- function(sx_obj, ...) {
 
   # output plots -----------
   plot(yhat_fc, x = x_fc, ylim = c(min(yhat_LB), max(yhat_UB)),
-       xlim = c(min(x_fc), max(x_fc)), ylab = 'yhat', xlab = 'date',
+       xlim = c(min(x_fc), max(x_fc)),
        type = 'l', lty = 3, lwd = 2,
        col = 4, sub = sprintf("engine = '%s'", engine), cex.sub = .7,
        ...)

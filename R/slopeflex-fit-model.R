@@ -23,12 +23,11 @@ slopeflex_fit_model <- function(
   dots = list(...)
 
   if(engine == 'stan') {
-    mc.cores = if(is.null(dots$mc.cores)) 1 else dots$mc.cores
     mcmc_list = if(is.null(dots$mcmc_list)) {
       list(n_iter = 2500, n_chain = 1, n_thin = 1, n_warmup = 500,
              control = list(adapt_delta = .8, max_treedepth = 10))
     } else dots$mcmc_list
-    slopeflex_fit_model_stan(ds, sx, h, lb_ub, mc.cores, mcmc_list)
+    slopeflex_fit_model_stan(ds, sx, h, lb_ub, mcmc_list)
   } else {
     slopeflex_fit_model_lm(ds, sx, h, lb_ub)
   }
@@ -44,18 +43,19 @@ slopeflex_fit_model <- function(
 #' @param h positive integer value. this is the forecast horizon.
 #'     added to the end of the last slopeflex (even if unobserved)
 #' @param lb_ub numeric(2) vector with lower bound and upper bound.
-#' @param mc.cores number of cores to use. defaults 1 (recommended; faster)
 #' @param mcmc_list rstan list of options
 
 slopeflex_fit_model_stan <- function(
-  ds, sx, h, lb_ub, mc.cores, mcmc_list
+  ds, sx, h, lb_ub, mcmc_list
 ) {
 
-  options(mc.cores = mc.cores)
   dates = ds[[1]]
   standata <- slopeflex_build_model(ds, sx, h)
+  i = ifelse(standata$k==1,1,2)
+  models = list(stanmodels$XB_single,stanmodels$XB)
+
   fit <- rstan::sampling(
-    stanmodels$XB,
+    models[[i]],
     data = standata,
     control = mcmc_list$control,
     chains = mcmc_list$n_chain,
