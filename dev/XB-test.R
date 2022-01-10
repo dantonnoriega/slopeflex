@@ -32,7 +32,14 @@ sx <- tibble::tribble(
   ~date, ~params, ~params_sd,
   # these dates comprise the dates we sort of know with our best guesses
   # on the slope changes
-  breaks[2] + round(rnorm(1, 2, 3)), 5, 1
+  breaks[2] + round(rnorm(1, 2, 3)), 5, 1,
+  breaks[3] + round(rnorm(1, 2, 3)), 10, 10,
+  breaks[4] + round(rnorm(1, 2, 3)), -20, 20,
+  # these dates comprise future dates as "best guesses" by folks with
+  # knowledge (e.g. engineers)
+  as.Date("2019-12-08"), 32, 5,
+  as.Date("2020-02-01"), 51, 3,
+  as.Date("2020-03-13"), -36, 5
 )
 sx
 

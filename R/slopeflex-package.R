@@ -1,3 +1,7 @@
+.onAttach <- function(libname, pkgname) {
+  packageStartupMessage(paste(pkgname, utils::packageVersion(pkgname)))
+}
+
 #' The 'slopeflex' package.
 #'
 #' @description A DESCRIPTION OF THE PACKAGE

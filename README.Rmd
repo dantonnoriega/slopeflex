@@ -1,0 +1,38 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# slopeflex
+
+The goal of `slopeflex` is to estimate change points (slope flexes) for a vector of daily time series data including any future not-yet-observed slope flexes/changes/shifts.
+
+Both instances require a prior on what the slope flex/shift/change is going to be. When data are available for a given point, the model estimates the change accordingly. When data are not available, the model will forecast accordingly using the provided prior.
+
+This package is useful when dates anytime dates for existing change points (slope flexes) are known. It is likewise informative for modeling future change points.
+
+## Installation
+
+You can install the development version of slopeflex from Github:
+
+``` r
+install.packages('remotes')
+remotes::install_github("dantonnoriega/slopeflex")
+```
+
+## Example
+
+Here is an example of how slopeflex works using simulated data.
+
+```{r example, code=xfun::read_utf8('dev/XB-test.R')}
+```
